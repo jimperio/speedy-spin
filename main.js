@@ -77,7 +77,12 @@ function init(parent) {
     livesDisplay.text = lives;
 
     if (lives == 0) {
-      // TODO: Game over!
+      livesDisplay.text = 'GAME OVER';
+      for (i = 0; i < activeLedges.length; i++) {
+        var ledge = activeLedges[i];
+        ledge.body.velocity.y = 0;
+      }
+      return;
     }
 
     setTimeout(respawnPlayer, 400);
