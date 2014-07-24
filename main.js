@@ -1,3 +1,5 @@
+var STARTING_LIVES = 3;
+
 function init(parent) {
   var state = {
     preload: preload,
@@ -22,43 +24,83 @@ function init(parent) {
       ledgeTimer,
       activeLedges = [],
       livesDisplay,
-      lives = 1,
+      lives,
+      gameStarted = false,
       gameOver = false,
-      msgText;
+      msgText,
+      startKey;
 
   function preload() {
-    game.load.image('star', 'assets/star.png');
+    game.load.image('star', 'assets/hamster-wheel.png');
     game.load.image('ground', 'assets/ledge.png');
     game.load.image('wall', 'assets/wall.png');
   }
 
   function create() {
+    player = game.add.sprite(game.world.width/2, 
+                             game.world.height/2 - 30, 
+                             'star');
+    player.anchor.set(0.5);
+    game.physics.arcade.enable(player);
+    player.checkWorldBounds = true;
+    player.outOfBoundsKill = true;
+    player.body.gravity.y = 800;
+    player.body.allowGravity = false;
+
+    player.events.onOutOfBounds.add(lifeLost, this);
+
+    // Walls and ledges.
+    walls = game.add.group();
+    walls.enableBody = true;
+    var wall = walls.create(0, 0, 'wall');
+    wall.body.immovable = true;
+
+    wall = walls.create(290, 0, 'wall');
+    wall.body.immovable = true;
+
+    platforms = game.add.group();
+    platforms.enableBody = true;
+
     livesDisplay = game.add.text(15, 
                                  0, 
                                  lives,
                                  {
                                    fill: "#fff",
                                  });
-    
-    player = game.add.sprite(32, 0, 'star');
-    game.physics.arcade.enable(player);
-    player.checkWorldBounds = true;
-    player.outOfBoundsKill = true;
-    player.body.gravity.y = 800;
 
-    player.events.onOutOfBounds.add(lifeLost, this);
+    msgText = game.add.text(
+        game.world.width/2,
+        game.world.height/2,
+        "",
+        {
+          font: '18pt Arial',
+          fill: '#fff',
+          align: 'center',
+        }
+      );
+    msgText.anchor.set(0.5);
+    msgText.text = "[S]TART SPEEDY SPIN";
 
     cursors = game.input.keyboard.createCursorKeys();
+    // S to start the game
+    startKey = game.input.keyboard.addKey(Phaser.Keyboard.S);
+    startKey.onDown.add(start, this);
+  }
+  
+  function start() {
+    if (gameStarted) return;
 
-    // Walls and ledges.
-    platforms = game.add.group();
-    platforms.enableBody = true;
+    platforms.removeAll();
+    gameStarted = true;
+    msgText.text = "";
+    lives = STARTING_LIVES;
+    livesDisplay.text = lives;
 
-    var wall = platforms.create(0, 0, 'wall');
-    wall.body.immovable = true;
-
-    wall = platforms.create(290, 0, 'wall');
-    wall.body.immovable = true;
+    for (i = 0; i < activeLedges.length; i++) {
+      var ledge = activeLedges[i];
+      ledge.destroy();
+    }
+    activeLedges = [];
 
     // Initial ledges. New ones are created as old ones
     // go out of bounds.
@@ -69,6 +111,7 @@ function init(parent) {
     }
 
     respawnPlayer();
+    player.body.allowGravity = true;
   }
 
   function lifeLost() {
@@ -81,17 +124,8 @@ function init(parent) {
         ledge.body.velocity.y = 0;
       }
       gameOver = true;
-      msgText = game.add.text(
-        game.world.width/2,
-        game.world.height/2,
-        "GAME OVER\nT[R]Y AGAIN?",
-        {
-          font: '20pt Arial',
-          fill: '#fff',
-          align: 'center',
-        }
-      );
-      msgText.anchor.set(0.5);
+      gameStarted = false;
+      msgText.text = "GAME OVER\nRE[S]TART?";
       return;
     }
 
@@ -109,6 +143,11 @@ function init(parent) {
   }
 
   function update() {
+    if (!gameStarted) {
+      return;
+    }
+
+    game.physics.arcade.collide(player, walls);
     game.physics.arcade.collide(player, platforms);
 
     player.body.velocity.x = 0;
@@ -116,15 +155,16 @@ function init(parent) {
     if (cursors.left.isDown)
     {
       player.body.velocity.x = -300;
+      player.scale.x = 1;
     }
     else if (cursors.right.isDown)
     {
       player.body.velocity.x = 300;
+      player.scale.x = -1;
     }
   }
 
   function spawnLedge() {
-    if (gameOver) return;
     createLedge(getRandomLeft(), 390);
   }
 
@@ -137,6 +177,7 @@ function init(parent) {
     ledge.body.velocity.y = currFallSpeed;
     ledge.body.immovable = true;
     ledge.checkWorldBounds = true;
+    ledge.outOfBoundsKill = true;
     ledge.events.onOutOfBounds.add(removeLedge, this);
     activeLedges.push(ledge)
   }
