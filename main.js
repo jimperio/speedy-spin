@@ -22,7 +22,9 @@ function init(parent) {
       ledgeTimer,
       activeLedges = [],
       livesDisplay,
-      lives = 3;
+      lives = 1,
+      gameOver = false,
+      msgText;
 
   function preload() {
     game.load.image('star', 'assets/star.png');
@@ -41,6 +43,7 @@ function init(parent) {
     player = game.add.sprite(32, 0, 'star');
     game.physics.arcade.enable(player);
     player.checkWorldBounds = true;
+    player.outOfBoundsKill = true;
     player.body.gravity.y = 800;
 
     player.events.onOutOfBounds.add(lifeLost, this);
@@ -60,16 +63,12 @@ function init(parent) {
     // Initial ledges. New ones are created as old ones
     // go out of bounds.
     var top = 50;
-    var left;
     for (i = 0; i <= 7; i++) {
-      left = getRandomLeft();
-      createLedge(left, top);
-      if (top == 150) {
-        player.reset(left + 35, top - 20);
-      }
+      createLedge(getRandomLeft(), top);
       top += 50;
     }
 
+    respawnPlayer();
   }
 
   function lifeLost() {
@@ -77,11 +76,22 @@ function init(parent) {
     livesDisplay.text = lives;
 
     if (lives == 0) {
-      livesDisplay.text = 'GAME OVER';
       for (i = 0; i < activeLedges.length; i++) {
         var ledge = activeLedges[i];
         ledge.body.velocity.y = 0;
       }
+      gameOver = true;
+      msgText = game.add.text(
+        game.world.width/2,
+        game.world.height/2,
+        "GAME OVER\nT[R]Y AGAIN?",
+        {
+          font: '20pt Arial',
+          fill: '#fff',
+          align: 'center',
+        }
+      );
+      msgText.anchor.set(0.5);
       return;
     }
 
@@ -114,6 +124,7 @@ function init(parent) {
   }
 
   function spawnLedge() {
+    if (gameOver) return;
     createLedge(getRandomLeft(), 390);
   }
 
