@@ -20,7 +20,10 @@ function init(parent) {
       platforms,
       currFallSpeed = -100,
       ledgeTimer,
-      hasSkippedLedge = false;
+      activeLedges = [],
+      hasSkippedLedge = false,
+      livesDisplay,
+      lives = 3;
 
   function preload() {
     game.load.image('star', 'assets/star.png');
@@ -29,17 +32,19 @@ function init(parent) {
   }
 
   function create() {
-    game.add.text(15, 
-                  0, 
-                  "3",
-                  {
-                    fill: "#fff",
-                  });
+    livesDisplay = game.add.text(15, 
+                                 0, 
+                                 lives,
+                                 {
+                                   fill: "#fff",
+                                 });
+    
     player = game.add.sprite(32, 0, 'star');
-
     game.physics.arcade.enable(player);
+    player.checkWorldBounds = true;
+    player.body.gravity.y = 400;
 
-    player.body.gravity.y = 300;
+    player.events.onOutOfBounds.add(lifeLost, this);
 
     cursors = game.input.keyboard.createCursorKeys();
 
@@ -59,12 +64,39 @@ function init(parent) {
     ledgeGenerator = game.time.events.loop(550, spawnLedge);
 
     var top = 150;
+    var left;
     for (i = 0; i <= 5; i++) {
-      createLedge(getRandomLeft(), top);
+      left = getRandomLeft();
+      createLedge(left, top);
+      if (i==0) {
+        player.reset(left + 35, top - 20);
+      }
       top += 50;
     }
 
-   }
+  }
+
+  function lifeLost() {
+    lives -= 1;
+    livesDisplay.text = lives;
+
+    if (lives == 0) {
+      // TODO: Game over!
+    }
+
+    // Respawn at a ledge nearer the bottom.
+    setTimeout(respawnPlayer, 400);
+  }
+
+  function respawnPlayer() {
+    for (i = 0; i < activeLedges.length; i++) {
+      var ledge = activeLedges[i];
+      if (ledge.y > 300) {
+        player.reset(ledge.x + 35, ledge.y - 20);
+        break;
+      }
+    }
+  }
 
   function update() {
     game.physics.arcade.collide(player, platforms);
@@ -74,13 +106,13 @@ function init(parent) {
 
     if (cursors.left.isDown)
     {
-        //  Move to the left
-        player.body.velocity.x = -150;
+      //  Move to the left
+      player.body.velocity.x = -150;
     }
     else if (cursors.right.isDown)
     {
-        //  Move to the right
-        player.body.velocity.x = 150;
+      //  Move to the right
+      player.body.velocity.x = 150;
     }
   }
 
@@ -101,6 +133,16 @@ function init(parent) {
     var ledge = platforms.create(left, top, 'ground');
     ledge.body.velocity.y = currFallSpeed;
     ledge.body.immovable = true;
+    ledge.checkWorldBounds = true;
+    ledge.events.onOutOfBounds.add(removeLedge, this);
+    activeLedges.push(ledge)
+  }
+
+  function removeLedge(ledge) {
+    var i = activeLedges.indexOf(ledge);
+    if (i > -1) {
+      activeLedges.splice(i, 1);
+    }
   }
 
 }
