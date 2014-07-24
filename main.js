@@ -18,10 +18,9 @@ function init(parent) {
   var player,
       cursors,
       platforms,
-      currFallSpeed = -100,
+      currFallSpeed = -200,
       ledgeTimer,
       activeLedges = [],
-      hasSkippedLedge = false,
       livesDisplay,
       lives = 3;
 
@@ -42,13 +41,13 @@ function init(parent) {
     player = game.add.sprite(32, 0, 'star');
     game.physics.arcade.enable(player);
     player.checkWorldBounds = true;
-    player.body.gravity.y = 400;
+    player.body.gravity.y = 800;
 
     player.events.onOutOfBounds.add(lifeLost, this);
 
     cursors = game.input.keyboard.createCursorKeys();
 
-    //  Walls.
+    // Walls and ledges.
     platforms = game.add.group();
     platforms.enableBody = true;
 
@@ -58,17 +57,14 @@ function init(parent) {
     wall = platforms.create(290, 0, 'wall');
     wall.body.immovable = true;
 
-    // Setup ledge creation.
-    // TODO: Is there a more direct way to tie ledge generation
-    // to current speed? Ledges will speed up as game progresses.
-    ledgeGenerator = game.time.events.loop(550, spawnLedge);
-
-    var top = 150;
+    // Initial ledges. New ones are created as old ones
+    // go out of bounds.
+    var top = 50;
     var left;
-    for (i = 0; i <= 5; i++) {
+    for (i = 0; i <= 7; i++) {
       left = getRandomLeft();
       createLedge(left, top);
-      if (i==0) {
+      if (top == 150) {
         player.reset(left + 35, top - 20);
       }
       top += 50;
@@ -84,7 +80,6 @@ function init(parent) {
       // TODO: Game over!
     }
 
-    // Respawn at a ledge nearer the bottom.
     setTimeout(respawnPlayer, 400);
   }
 
@@ -101,28 +96,20 @@ function init(parent) {
   function update() {
     game.physics.arcade.collide(player, platforms);
 
-    //  Reset the players velocity (movement)
     player.body.velocity.x = 0;
 
     if (cursors.left.isDown)
     {
-      //  Move to the left
-      player.body.velocity.x = -150;
+      player.body.velocity.x = -300;
     }
     else if (cursors.right.isDown)
     {
-      //  Move to the right
-      player.body.velocity.x = 150;
+      player.body.velocity.x = 300;
     }
   }
 
-  function spawnLedge(left, top) {
-    if (!hasSkippedLedge && Math.random() <= 0.25) {
-      hasSkippedLedge = true;
-      return;
-    }
-    hasSkippedLedge = false;
-    createLedge(getRandomLeft(), 400);
+  function spawnLedge() {
+    createLedge(getRandomLeft(), 390);
   }
 
   function getRandomLeft() {
@@ -143,6 +130,7 @@ function init(parent) {
     if (i > -1) {
       activeLedges.splice(i, 1);
     }
+    spawnLedge();
   }
 
 }
