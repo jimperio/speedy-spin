@@ -31,7 +31,7 @@ function init(parent) {
       startKey;
 
   function preload() {
-    game.load.image('star', 'assets/hamster-wheel.png');
+    game.load.image('player', 'assets/hamster-wheel.png');
     game.load.image('ground', 'assets/ledge.png');
     game.load.image('wall', 'assets/wall.png');
   }
@@ -39,7 +39,7 @@ function init(parent) {
   function create() {
     player = game.add.sprite(game.world.width/2, 
                              game.world.height/2 - 30, 
-                             'star');
+                             'player');
     player.anchor.set(0.5);
     game.physics.arcade.enable(player);
     player.checkWorldBounds = true;
