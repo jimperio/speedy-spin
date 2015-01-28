@@ -21,7 +21,6 @@ function init(parent) {
       cursors,
       platforms,
       currFallSpeed = -150,
-      ledgeTimer,
       activeLedges = [],
       livesDisplay,
       lives,
