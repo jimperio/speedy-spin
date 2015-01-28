@@ -37,8 +37,8 @@ function init(parent) {
   }
 
   function create() {
-    player = game.add.sprite(game.world.width/2, 
-                             game.world.height/2 - 30, 
+    player = game.add.sprite(game.world.width/2,
+                             game.world.height/2 - 30,
                              'player');
     player.anchor.set(0.5);
     game.physics.arcade.enable(player);
@@ -61,8 +61,8 @@ function init(parent) {
     platforms = game.add.group();
     platforms.enableBody = true;
 
-    livesDisplay = game.add.text(15, 
-                                 0, 
+    livesDisplay = game.add.text(15,
+                                 0,
                                  lives,
                                  {
                                    fill: "#fff",
@@ -118,7 +118,7 @@ function init(parent) {
     lives -= 1;
     livesDisplay.text = lives;
 
-    if (lives == 0) {
+    if (lives === 0) {
       for (i = 0; i < activeLedges.length; i++) {
         var ledge = activeLedges[i];
         ledge.body.velocity.y = 0;
@@ -179,7 +179,7 @@ function init(parent) {
     ledge.checkWorldBounds = true;
     ledge.outOfBoundsKill = true;
     ledge.events.onOutOfBounds.add(removeLedge, this);
-    activeLedges.push(ledge)
+    activeLedges.push(ledge);
   }
 
   function removeLedge(ledge) {
