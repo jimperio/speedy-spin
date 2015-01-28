@@ -11,7 +11,7 @@ function init(parent) {
   };
 
   var game = new Phaser.Game(
-    500,
+    600,
     400,
     Phaser.AUTO,
     parent,
@@ -68,7 +68,7 @@ function init(parent) {
     var wall = walls.create(0, 0, 'wall');
     wall.body.immovable = true;
 
-    wall = walls.create(490, 0, 'wall');
+    wall = walls.create(game.world.width - 10, 0, 'wall');
     wall.body.immovable = true;
 
     platforms = game.add.group();
@@ -85,7 +85,7 @@ function init(parent) {
                                    fill: "#fff",
                                  });
 
-    scoreDisplay = game.add.text(395,
+    scoreDisplay = game.add.text(game.world.width - 105,
                                  5,
                                  scorePadding,
                                  {
@@ -140,10 +140,10 @@ function init(parent) {
 
     // Initial ledges. New ones are created as old ones
     // go out of bounds.
-    var top = 57;
-    for (i = 0; i <= 6; i++) {
+    var top = 67;
+    for (i = 0; i <= 5; i++) {
       createLedge(getRandomLeft(), top);
-      top += 57;
+      top += 67;
     }
 
     respawnPlayer();
@@ -206,7 +206,7 @@ function init(parent) {
     var scoreString = String(score);
     scoreDisplay.text = scorePadding.substring(0, scorePadding.length - scoreString.length) + scoreString;
 
-    var level = Math.floor(score/250);
+    var level = Math.floor(score/200);
     if (level > currLevel) {
       currLevel = level;
       currFallSpeed -= 25;
@@ -220,12 +220,12 @@ function init(parent) {
 
   function spawnLedge() {
     if (!gameStarted) { return; }
-    var top = activeLedges[activeLedges.length - 1].body.y + 60;
+    var top = activeLedges[activeLedges.length - 1].body.y + 67;
     createLedge(getRandomLeft(), top);
   }
 
   function getRandomLeft() {
-    return Math.random() * (500 - 90 - 20) + 10;
+    return Math.random() * (game.world.width - 90 - 20) + 10;
   }
 
   function createLedge(left, top) {
