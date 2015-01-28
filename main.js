@@ -1,4 +1,7 @@
 var STARTING_LIVES = 3;
+var INITIAL_FALL_SPEED = -150;
+var INITIAL_PLAYER_VELOCITY = 300;
+var INITIAL_PLAYER_GRAVITY = 1000;
 
 function init(parent) {
   var state = {
@@ -20,7 +23,7 @@ function init(parent) {
   var player,
       cursors,
       platforms,
-      currFallSpeed = -150,
+      currFallSpeed,
       activeLedges = [],
       livesDisplay,
       lives,
@@ -28,6 +31,9 @@ function init(parent) {
       score = 0,
       scorePadding = "000000",
       highScore = 0,
+      currLevel = 0,
+      currPlayerVelocity,
+      currPlayerGravity,
       gameStarted = false,
       gameOver = false,
       msgText,
@@ -47,7 +53,6 @@ function init(parent) {
     game.physics.arcade.enable(player);
     player.checkWorldBounds = true;
     player.outOfBoundsKill = true;
-    player.body.gravity.y = 1000;
     player.body.allowGravity = false;
 
     player.events.onOutOfBounds.add(lifeLost, this);
@@ -103,8 +108,16 @@ function init(parent) {
     platforms.removeAll();
     gameStarted = true;
     msgText.text = "";
+    
+    currLevel = 0;
+    currFallSpeed = INITIAL_FALL_SPEED;
+    currPlayerVelocity = INITIAL_PLAYER_VELOCITY;
+    currPlayerGravity = INITIAL_PLAYER_GRAVITY;
+    player.body.gravity.y = currPlayerGravity;
+    
     lives = STARTING_LIVES;
     livesDisplay.text = lives;
+    
     score = 0;
     scoreDisplay.text = scorePadding;
 
@@ -169,18 +182,31 @@ function init(parent) {
 
     if (cursors.left.isDown)
     {
-      player.body.velocity.x = -300;
+      player.body.velocity.x = -currPlayerVelocity;
       player.scale.x = 1;
     }
     else if (cursors.right.isDown)
     {
-      player.body.velocity.x = 300;
+      player.body.velocity.x = currPlayerVelocity;
       player.scale.x = -1;
     }
 
     score += 1;
     var scoreString = String(score);
     scoreDisplay.text = scorePadding.substring(0, scorePadding.length - scoreString.length) + scoreString;
+
+    var level = Math.floor(score/250);
+    if (level > currLevel) {
+      currLevel = level;
+      currFallSpeed -= 25;
+      for (i = 0; i < activeLedges.length; i++) {
+        var ledge = activeLedges[i];
+        ledge.body.velocity.y = currFallSpeed;
+      }
+      currPlayerVelocity += 50;
+      currPlayerGravity += 150;
+      player.body.gravity.y = currPlayerGravity;
+    }
   }
 
   function spawnLedge() {
