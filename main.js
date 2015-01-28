@@ -11,7 +11,7 @@ function init(parent) {
   };
 
   var game = new Phaser.Game(
-    300,
+    500,
     400,
     Phaser.AUTO,
     parent,
@@ -63,7 +63,7 @@ function init(parent) {
     var wall = walls.create(0, 0, 'wall');
     wall.body.immovable = true;
 
-    wall = walls.create(290, 0, 'wall');
+    wall = walls.create(490, 0, 'wall');
     wall.body.immovable = true;
 
     platforms = game.add.group();
@@ -76,7 +76,7 @@ function init(parent) {
                                    fill: "#fff",
                                  });
 
-    scoreDisplay = game.add.text(195,
+    scoreDisplay = game.add.text(395,
                                  0,
                                  scorePadding,
                                  {
@@ -215,7 +215,7 @@ function init(parent) {
   }
 
   function getRandomLeft() {
-    return Math.random() * (300 - 90 - 20) + 10;
+    return Math.random() * (500 - 90 - 20) + 10;
   }
 
   function createLedge(left, top) {
