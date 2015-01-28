@@ -11,7 +11,7 @@ function init(parent) {
   };
 
   var game = new Phaser.Game(
-    300,
+    500,
     400,
     Phaser.AUTO,
     parent,
@@ -63,21 +63,22 @@ function init(parent) {
     var wall = walls.create(0, 0, 'wall');
     wall.body.immovable = true;
 
-    wall = walls.create(290, 0, 'wall');
+    wall = walls.create(490, 0, 'wall');
     wall.body.immovable = true;
 
     platforms = game.add.group();
     platforms.enableBody = true;
 
-    livesDisplay = game.add.text(15,
-                                 0,
+    game.add.sprite(15, 5, 'player');
+    livesDisplay = game.add.text(55,
+                                 5,
                                  lives,
                                  {
                                    fill: "#fff",
                                  });
 
-    scoreDisplay = game.add.text(195,
-                                 0,
+    scoreDisplay = game.add.text(395,
+                                 5,
                                  scorePadding,
                                  {
                                    fill: "#fff",
@@ -116,7 +117,7 @@ function init(parent) {
     player.body.gravity.y = currPlayerGravity;
     
     lives = STARTING_LIVES;
-    livesDisplay.text = lives;
+    livesDisplay.text = 'x ' + lives;
     
     score = 0;
     scoreDisplay.text = scorePadding;
@@ -141,7 +142,7 @@ function init(parent) {
 
   function lifeLost() {
     lives -= 1;
-    livesDisplay.text = lives;
+    livesDisplay.text = 'x ' + lives;
 
     if (lives === 0) {
       for (i = 0; i < activeLedges.length; i++) {
@@ -215,7 +216,7 @@ function init(parent) {
   }
 
   function getRandomLeft() {
-    return Math.random() * (300 - 90 - 20) + 10;
+    return Math.random() * (500 - 90 - 20) + 10;
   }
 
   function createLedge(left, top) {
