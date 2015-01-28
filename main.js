@@ -220,7 +220,8 @@ function init(parent) {
 
   function spawnLedge() {
     if (!gameStarted) { return; }
-    createLedge(getRandomLeft(), 390);
+    var top = activeLedges[activeLedges.length - 1].body.y + 60;
+    createLedge(getRandomLeft(), top);
   }
 
   function getRandomLeft() {
@@ -234,7 +235,6 @@ function init(parent) {
     }
     var ledge = platforms.getFirstDead();
     if (!ledge) {
-      console.log('creating new ledge');
       ledge = platforms.create(0, 0, 'ground');
       ledge.body.immovable = true;
       ledge.checkWorldBounds = true;
@@ -257,7 +257,6 @@ function init(parent) {
   function spawnHeart(left, top) {
     var heart = hearts.getFirstDead();
     if (!heart) {
-      console.log('creating new heart');
       heart = hearts.create(0, 0, 'heart');
       heart.checkWorldBounds = true;
       heart.onOutOfBoundsKill = true;
