@@ -25,6 +25,7 @@ function init(parent) {
       platforms,
       currFallSpeed,
       activeLedges = [],
+      ledgeCounter = 0,
       livesDisplay,
       lives,
       scoreDisplay,
@@ -44,6 +45,7 @@ function init(parent) {
     game.load.image('ground', 'assets/ledge.png');
     game.load.image('wall', 'assets/wall.png');
     game.load.image('sky', 'assets/sky.png');
+    game.load.image('heart', 'assets/heart.png');
   }
 
   function create() {
@@ -71,6 +73,9 @@ function init(parent) {
 
     platforms = game.add.group();
     platforms.enableBody = true;
+
+    hearts = game.add.group();
+    hearts.enableBody = true;
 
     game.add.sprite(15, 5, 'player');
     livesDisplay = game.add.text(55,
@@ -110,6 +115,8 @@ function init(parent) {
     if (gameStarted) return;
 
     platforms.removeAll();
+    hearts.removeAll();
+
     gameStarted = true;
     msgText.text = "";
     
@@ -148,10 +155,8 @@ function init(parent) {
     livesDisplay.text = 'x ' + lives;
 
     if (lives === 0) {
-      for (i = 0; i < activeLedges.length; i++) {
-        var ledge = activeLedges[i];
-        ledge.body.velocity.y = 0;
-      }
+      platforms.setAll('body.velocity.y', 0);
+      hearts.setAll('body.velocity.y', 0);
       gameOver = true;
       gameStarted = false;
       if (score > highScore) {
@@ -181,6 +186,8 @@ function init(parent) {
 
     game.physics.arcade.collide(player, walls);
     game.physics.arcade.collide(player, platforms);
+    
+    game.physics.arcade.overlap(player, hearts, collectHeart, null, this);
 
     player.body.velocity.x = 0;
 
@@ -203,10 +210,8 @@ function init(parent) {
     if (level > currLevel) {
       currLevel = level;
       currFallSpeed -= 25;
-      for (i = 0; i < activeLedges.length; i++) {
-        var ledge = activeLedges[i];
-        ledge.body.velocity.y = currFallSpeed;
-      }
+      platforms.setAll('body.velocity.y', currFallSpeed);
+      hearts.setAll('body.velocity.y', currFallSpeed);
       currPlayerVelocity += 50;
       currPlayerGravity += 150;
       player.body.gravity.y = currPlayerGravity;
@@ -223,6 +228,11 @@ function init(parent) {
   }
 
   function createLedge(left, top) {
+    ledgeCounter++;
+    if (ledgeCounter % (10 + currLevel*5) === 0) {
+      var heart = hearts.create(left + 10, top - 12, 'heart');
+      heart.body.velocity.y = currFallSpeed;
+    }
     var ledge = platforms.create(left, top, 'ground');
     ledge.body.velocity.y = currFallSpeed;
     ledge.body.immovable = true;
@@ -238,6 +248,12 @@ function init(parent) {
       activeLedges.splice(i, 1);
     }
     spawnLedge();
+  }
+
+  function collectHeart(player, heart) {
+    heart.kill();
+    lives += 1;
+    livesDisplay.text = 'x ' + lives;
   }
 
 }
