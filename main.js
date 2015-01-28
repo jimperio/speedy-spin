@@ -69,15 +69,16 @@ function init(parent) {
     platforms = game.add.group();
     platforms.enableBody = true;
 
-    livesDisplay = game.add.text(15,
-                                 0,
+    game.add.sprite(15, 5, 'player');
+    livesDisplay = game.add.text(55,
+                                 5,
                                  lives,
                                  {
                                    fill: "#fff",
                                  });
 
     scoreDisplay = game.add.text(395,
-                                 0,
+                                 5,
                                  scorePadding,
                                  {
                                    fill: "#fff",
@@ -116,7 +117,7 @@ function init(parent) {
     player.body.gravity.y = currPlayerGravity;
     
     lives = STARTING_LIVES;
-    livesDisplay.text = lives;
+    livesDisplay.text = 'x ' + lives;
     
     score = 0;
     scoreDisplay.text = scorePadding;
@@ -141,7 +142,7 @@ function init(parent) {
 
   function lifeLost() {
     lives -= 1;
-    livesDisplay.text = lives;
+    livesDisplay.text = 'x ' + lives;
 
     if (lives === 0) {
       for (i = 0; i < activeLedges.length; i++) {
