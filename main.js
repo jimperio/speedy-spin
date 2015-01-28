@@ -11,7 +11,7 @@ function init(parent) {
   };
 
   var game = new Phaser.Game(
-    500,
+    600,
     400,
     Phaser.AUTO,
     parent,
@@ -25,6 +25,7 @@ function init(parent) {
       platforms,
       currFallSpeed,
       activeLedges = [],
+      heartCounter = 0,
       livesDisplay,
       lives,
       scoreDisplay,
@@ -43,9 +44,13 @@ function init(parent) {
     game.load.image('player', 'assets/hamster-wheel.png');
     game.load.image('ground', 'assets/ledge.png');
     game.load.image('wall', 'assets/wall.png');
+    game.load.image('sky', 'assets/sky.png');
+    game.load.image('heart', 'assets/heart.png');
   }
 
   function create() {
+    game.add.sprite(0, 0, 'sky');
+
     player = game.add.sprite(game.world.width/2,
                              game.world.height/2 - 30,
                              'player');
@@ -63,11 +68,14 @@ function init(parent) {
     var wall = walls.create(0, 0, 'wall');
     wall.body.immovable = true;
 
-    wall = walls.create(490, 0, 'wall');
+    wall = walls.create(game.world.width - 10, 0, 'wall');
     wall.body.immovable = true;
 
     platforms = game.add.group();
     platforms.enableBody = true;
+
+    hearts = game.add.group();
+    hearts.enableBody = true;
 
     game.add.sprite(15, 5, 'player');
     livesDisplay = game.add.text(55,
@@ -77,7 +85,7 @@ function init(parent) {
                                    fill: "#fff",
                                  });
 
-    scoreDisplay = game.add.text(395,
+    scoreDisplay = game.add.text(game.world.width - 105,
                                  5,
                                  scorePadding,
                                  {
@@ -107,6 +115,8 @@ function init(parent) {
     if (gameStarted) return;
 
     platforms.removeAll();
+    hearts.removeAll();
+
     gameStarted = true;
     msgText.text = "";
     
@@ -130,10 +140,10 @@ function init(parent) {
 
     // Initial ledges. New ones are created as old ones
     // go out of bounds.
-    var top = 50;
-    for (i = 0; i <= 7; i++) {
+    var top = 67;
+    for (i = 0; i <= 5; i++) {
       createLedge(getRandomLeft(), top);
-      top += 50;
+      top += 67;
     }
 
     respawnPlayer();
@@ -145,10 +155,8 @@ function init(parent) {
     livesDisplay.text = 'x ' + lives;
 
     if (lives === 0) {
-      for (i = 0; i < activeLedges.length; i++) {
-        var ledge = activeLedges[i];
-        ledge.body.velocity.y = 0;
-      }
+      platforms.setAll('body.velocity.y', 0);
+      hearts.setAll('body.velocity.y', 0);
       gameOver = true;
       gameStarted = false;
       if (score > highScore) {
@@ -178,6 +186,8 @@ function init(parent) {
 
     game.physics.arcade.collide(player, walls);
     game.physics.arcade.collide(player, platforms);
+    
+    game.physics.arcade.overlap(player, hearts, collectHeart, null, this);
 
     player.body.velocity.x = 0;
 
@@ -196,14 +206,12 @@ function init(parent) {
     var scoreString = String(score);
     scoreDisplay.text = scorePadding.substring(0, scorePadding.length - scoreString.length) + scoreString;
 
-    var level = Math.floor(score/250);
+    var level = Math.floor(score/200);
     if (level > currLevel) {
       currLevel = level;
       currFallSpeed -= 25;
-      for (i = 0; i < activeLedges.length; i++) {
-        var ledge = activeLedges[i];
-        ledge.body.velocity.y = currFallSpeed;
-      }
+      platforms.setAll('body.velocity.y', currFallSpeed);
+      hearts.setAll('body.velocity.y', currFallSpeed);
       currPlayerVelocity += 50;
       currPlayerGravity += 150;
       player.body.gravity.y = currPlayerGravity;
@@ -212,21 +220,31 @@ function init(parent) {
 
   function spawnLedge() {
     if (!gameStarted) { return; }
-    createLedge(getRandomLeft(), 390);
+    var top = activeLedges[activeLedges.length - 1].body.y + 67;
+    createLedge(getRandomLeft(), top);
   }
 
   function getRandomLeft() {
-    return Math.random() * (500 - 90 - 20) + 10;
+    return Math.random() * (game.world.width - 90 - 20) + 10;
   }
 
   function createLedge(left, top) {
-    var ledge = platforms.create(left, top, 'ground');
+    var ledge = platforms.getFirstDead();
+    if (!ledge) {
+      ledge = platforms.create(0, 0, 'ground');
+      ledge.body.immovable = true;
+      ledge.checkWorldBounds = true;
+      ledge.outOfBoundsKill = true;
+      ledge.events.onOutOfBounds.add(removeLedge, this);
+    }
+    ledge.reset(left, top);
     ledge.body.velocity.y = currFallSpeed;
-    ledge.body.immovable = true;
-    ledge.checkWorldBounds = true;
-    ledge.outOfBoundsKill = true;
-    ledge.events.onOutOfBounds.add(removeLedge, this);
     activeLedges.push(ledge);
+    heartCounter++;
+    if (heartCounter === (10 + currLevel*5)) {
+      heartCounter = 0;
+      spawnHeart(ledge);
+    }
   }
 
   function removeLedge(ledge) {
@@ -235,6 +253,24 @@ function init(parent) {
       activeLedges.splice(i, 1);
     }
     spawnLedge();
+  }
+
+  function spawnHeart(ledge) {
+    var heart = hearts.getFirstDead();
+    if (!heart) {
+      heart = hearts.create(0, 0, 'heart');
+      heart.checkWorldBounds = true;
+      heart.onOutOfBoundsKill = true;
+    }
+    var offset = Math.random() * 80;
+    heart.reset(ledge.body.x + offset, ledge.body.y - 16);
+    heart.body.velocity.y = currFallSpeed;
+  }
+
+  function collectHeart(player, heart) {
+    heart.kill();
+    lives += 1;
+    livesDisplay.text = 'x ' + lives;
   }
 
 }
