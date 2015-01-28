@@ -25,7 +25,7 @@ function init(parent) {
       platforms,
       currFallSpeed,
       activeLedges = [],
-      ledgeCounter = 0,
+      heartCounter = 0,
       livesDisplay,
       lives,
       scoreDisplay,
@@ -229,7 +229,6 @@ function init(parent) {
   }
 
   function createLedge(left, top) {
-    ledgeCounter++;
     var ledge = platforms.getFirstDead();
     if (!ledge) {
       ledge = platforms.create(0, 0, 'ground');
@@ -241,7 +240,9 @@ function init(parent) {
     ledge.reset(left, top);
     ledge.body.velocity.y = currFallSpeed;
     activeLedges.push(ledge);
-    if (ledgeCounter % (10 + currLevel*5) === 0) {
+    heartCounter++;
+    if (heartCounter === (10 + currLevel*5)) {
+      heartCounter = 0;
       spawnHeart(ledge);
     }
   }
