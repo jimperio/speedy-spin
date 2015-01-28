@@ -20,7 +20,7 @@ function init(parent) {
   var player,
       cursors,
       platforms,
-      currFallSpeed = -200,
+      currFallSpeed = -150,
       ledgeTimer,
       activeLedges = [],
       livesDisplay,
