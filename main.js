@@ -24,6 +24,10 @@ function init(parent) {
       activeLedges = [],
       livesDisplay,
       lives,
+      scoreDisplay,
+      score = 0,
+      scorePadding = "000000",
+      highScore = 0,
       gameStarted = false,
       gameOver = false,
       msgText,
@@ -67,6 +71,13 @@ function init(parent) {
                                    fill: "#fff",
                                  });
 
+    scoreDisplay = game.add.text(195,
+                                 0,
+                                 scorePadding,
+                                 {
+                                   fill: "#fff",
+                                 });
+
     msgText = game.add.text(
         game.world.width/2,
         game.world.height/2,
@@ -94,6 +105,8 @@ function init(parent) {
     msgText.text = "";
     lives = STARTING_LIVES;
     livesDisplay.text = lives;
+    score = 0;
+    scoreDisplay.text = scorePadding;
 
     for (i = 0; i < activeLedges.length; i++) {
       var ledge = activeLedges[i];
@@ -124,7 +137,10 @@ function init(parent) {
       }
       gameOver = true;
       gameStarted = false;
-      msgText.text = "GAME OVER\nRE[S]TART?";
+      if (score > highScore) {
+        highScore = score;
+      }
+      msgText.text = "HIGH SCORE: " + highScore + "\n\nRE[S]TART?";
       return;
     }
 
@@ -161,9 +177,14 @@ function init(parent) {
       player.body.velocity.x = 300;
       player.scale.x = -1;
     }
+
+    score += 1;
+    var scoreString = String(score);
+    scoreDisplay.text = scorePadding.substring(0, scorePadding.length - scoreString.length) + scoreString;
   }
 
   function spawnLedge() {
+    if (!gameStarted) { return; }
     createLedge(getRandomLeft(), 390);
   }
 
