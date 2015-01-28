@@ -230,9 +230,6 @@ function init(parent) {
 
   function createLedge(left, top) {
     ledgeCounter++;
-    if (ledgeCounter % (10 + currLevel*5) === 0) {
-      spawnHeart(left + 37, top - 12);
-    }
     var ledge = platforms.getFirstDead();
     if (!ledge) {
       ledge = platforms.create(0, 0, 'ground');
@@ -244,6 +241,9 @@ function init(parent) {
     ledge.reset(left, top);
     ledge.body.velocity.y = currFallSpeed;
     activeLedges.push(ledge);
+    if (ledgeCounter % (10 + currLevel*5) === 0) {
+      spawnHeart(ledge);
+    }
   }
 
   function removeLedge(ledge) {
@@ -254,14 +254,14 @@ function init(parent) {
     spawnLedge();
   }
 
-  function spawnHeart(left, top) {
+  function spawnHeart(ledge) {
     var heart = hearts.getFirstDead();
     if (!heart) {
       heart = hearts.create(0, 0, 'heart');
       heart.checkWorldBounds = true;
       heart.onOutOfBoundsKill = true;
     }
-    heart.reset(left, top);
+    heart.reset(ledge.body.x + 37, ledge.body.y - 16);
     heart.body.velocity.y = currFallSpeed;
   }
 
