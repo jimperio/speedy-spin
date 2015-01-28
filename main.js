@@ -262,7 +262,8 @@ function init(parent) {
       heart.checkWorldBounds = true;
       heart.onOutOfBoundsKill = true;
     }
-    heart.reset(ledge.body.x + 37, ledge.body.y - 16);
+    var offset = Math.random() * 80;
+    heart.reset(ledge.body.x + offset, ledge.body.y - 16);
     heart.body.velocity.y = currFallSpeed;
   }
 
