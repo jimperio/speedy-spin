@@ -140,10 +140,10 @@ function init(parent) {
 
     // Initial ledges. New ones are created as old ones
     // go out of bounds.
-    var top = 50;
-    for (i = 0; i <= 7; i++) {
+    var top = 57;
+    for (i = 0; i <= 6; i++) {
       createLedge(getRandomLeft(), top);
-      top += 50;
+      top += 57;
     }
 
     respawnPlayer();
@@ -230,7 +230,7 @@ function init(parent) {
   function createLedge(left, top) {
     ledgeCounter++;
     if (ledgeCounter % (10 + currLevel*5) === 0) {
-      var heart = hearts.create(left + 10, top - 12, 'heart');
+      var heart = hearts.create(left + 37, top - 12, 'heart');
       heart.body.velocity.y = currFallSpeed;
     }
     var ledge = platforms.create(left, top, 'ground');
