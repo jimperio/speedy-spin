@@ -230,15 +230,19 @@ function init(parent) {
   function createLedge(left, top) {
     ledgeCounter++;
     if (ledgeCounter % (10 + currLevel*5) === 0) {
-      var heart = hearts.create(left + 37, top - 12, 'heart');
-      heart.body.velocity.y = currFallSpeed;
+      spawnHeart(left + 37, top - 12);
     }
-    var ledge = platforms.create(left, top, 'ground');
+    var ledge = platforms.getFirstDead();
+    if (!ledge) {
+      console.log('creating new ledge');
+      ledge = platforms.create(0, 0, 'ground');
+      ledge.body.immovable = true;
+      ledge.checkWorldBounds = true;
+      ledge.outOfBoundsKill = true;
+      ledge.events.onOutOfBounds.add(removeLedge, this);
+    }
+    ledge.reset(left, top);
     ledge.body.velocity.y = currFallSpeed;
-    ledge.body.immovable = true;
-    ledge.checkWorldBounds = true;
-    ledge.outOfBoundsKill = true;
-    ledge.events.onOutOfBounds.add(removeLedge, this);
     activeLedges.push(ledge);
   }
 
@@ -248,6 +252,18 @@ function init(parent) {
       activeLedges.splice(i, 1);
     }
     spawnLedge();
+  }
+
+  function spawnHeart(left, top) {
+    var heart = hearts.getFirstDead();
+    if (!heart) {
+      console.log('creating new heart');
+      heart = hearts.create(0, 0, 'heart');
+      heart.checkWorldBounds = true;
+      heart.onOutOfBoundsKill = true;
+    }
+    heart.reset(left, top);
+    heart.body.velocity.y = currFallSpeed;
   }
 
   function collectHeart(player, heart) {
