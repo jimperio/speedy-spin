@@ -43,7 +43,7 @@ function init(parent) {
     game.physics.arcade.enable(player);
     player.checkWorldBounds = true;
     player.outOfBoundsKill = true;
-    player.body.gravity.y = 800;
+    player.body.gravity.y = 1000;
     player.body.allowGravity = false;
 
     player.events.onOutOfBounds.add(lifeLost, this);
