@@ -198,6 +198,7 @@ function init(parent) {
     game.physics.arcade.collide(player, walls);
     game.physics.arcade.collide(player, platforms);
     game.physics.arcade.collide(player, spikes, lifeLost);
+    
     game.physics.arcade.overlap(player, hearts, collectHeart, null, this);
 
     player.body.velocity.x = 0;
@@ -264,7 +265,6 @@ function init(parent) {
     ledge.reset(left, top);
     ledge.body.velocity.y = currFallSpeed;
     activeLedges.push(ledge);
-    heartCounter++;
     if (!isSpikes && heartCounter >= (10 + currLevel*5)) {
       heartCounter = 0;
       spawnHeart(ledge);
