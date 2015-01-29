@@ -2,6 +2,7 @@ var STARTING_LIVES = 3;
 var INITIAL_FALL_SPEED = -150;
 var INITIAL_PLAYER_VELOCITY = 300;
 var INITIAL_PLAYER_GRAVITY = 1000;
+var RESPAWN_TIME = 500;
 
 function init(parent) {
   var state = {
@@ -37,6 +38,7 @@ function init(parent) {
       currPlayerGravity,
       gameStarted = false,
       gameOver = false,
+      isRespawning = false,
       msgText,
       startKey;
 
@@ -46,6 +48,7 @@ function init(parent) {
     game.load.image('wall', 'assets/wall.png');
     game.load.image('sky', 'assets/sky.png');
     game.load.image('heart', 'assets/heart.png');
+    game.load.image('spikes', 'assets/death-ledge.png');
   }
 
   function create() {
@@ -73,6 +76,9 @@ function init(parent) {
 
     platforms = game.add.group();
     platforms.enableBody = true;
+
+    spikes = game.add.group();
+    spikes.enableBody = true;
 
     hearts = game.add.group();
     hearts.enableBody = true;
@@ -115,6 +121,7 @@ function init(parent) {
     if (gameStarted) return;
 
     platforms.removeAll();
+    spikes.removeAll();
     hearts.removeAll();
 
     gameStarted = true;
@@ -151,11 +158,14 @@ function init(parent) {
   }
 
   function lifeLost() {
+    player.kill();
+    isRespawning = true;
     lives -= 1;
     livesDisplay.text = 'x ' + lives;
 
     if (lives === 0) {
       platforms.setAll('body.velocity.y', 0);
+      spikes.setAll('body.velocity.y', 0);
       hearts.setAll('body.velocity.y', 0);
       gameOver = true;
       gameStarted = false;
@@ -166,17 +176,18 @@ function init(parent) {
       return;
     }
 
-    setTimeout(respawnPlayer, 400);
+    setTimeout(respawnPlayer, RESPAWN_TIME);
   }
 
   function respawnPlayer() {
     for (i = 0; i < activeLedges.length; i++) {
       var ledge = activeLedges[i];
-      if (ledge.y > 300) {
+      if (ledge.y > 300 && !ledge.isSpike) {
         player.reset(ledge.x + 35, ledge.y - 20);
         break;
       }
     }
+    isRespawning = false;
   }
 
   function update() {
@@ -186,7 +197,7 @@ function init(parent) {
 
     game.physics.arcade.collide(player, walls);
     game.physics.arcade.collide(player, platforms);
-    
+    game.physics.arcade.collide(player, spikes, lifeLost);
     game.physics.arcade.overlap(player, hearts, collectHeart, null, this);
 
     player.body.velocity.x = 0;
@@ -211,6 +222,7 @@ function init(parent) {
       currLevel = level;
       currFallSpeed -= 25;
       platforms.setAll('body.velocity.y', currFallSpeed);
+      spikes.setAll('body.velocity.y', currFallSpeed);
       hearts.setAll('body.velocity.y', currFallSpeed);
       currPlayerVelocity += 50;
       currPlayerGravity += 150;
@@ -229,19 +241,31 @@ function init(parent) {
   }
 
   function createLedge(left, top) {
-    var ledge = platforms.getFirstDead();
+    var group, spriteName;
+    var isSpikes = !isRespawning && Math.random() > 0.8;
+    if (isSpikes) {
+      group = spikes;
+      spriteName = 'spikes';
+    } else {
+      group = platforms;
+      spriteName = 'ground';
+      heartCounter++;
+    }
+
+    var ledge = group.getFirstDead();
     if (!ledge) {
-      ledge = platforms.create(0, 0, 'ground');
+      ledge = group.create(0, 0, spriteName);
       ledge.body.immovable = true;
       ledge.checkWorldBounds = true;
       ledge.outOfBoundsKill = true;
       ledge.events.onOutOfBounds.add(removeLedge, this);
+      ledge.isSpikes = isSpikes;
     }
     ledge.reset(left, top);
     ledge.body.velocity.y = currFallSpeed;
     activeLedges.push(ledge);
     heartCounter++;
-    if (heartCounter === (10 + currLevel*5)) {
+    if (!isSpikes && heartCounter >= (10 + currLevel*5)) {
       heartCounter = 0;
       spawnHeart(ledge);
     }
